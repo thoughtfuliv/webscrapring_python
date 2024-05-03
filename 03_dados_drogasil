@@ -1,0 +1,32 @@
+#importando bibliotecas
+
+import requests
+from bs4 import BeautifulSoup
+
+# obtendo dados da drogasil
+
+url_base = 'https://www.drogasil.com.br/search?w='
+
+produto_nome = input('Qual produto você deseja?')
+
+response = requests.get(url_base + produto_nome)
+
+site = BeautifulSoup(response.text,'html.parser')
+
+produto = site.find('div', attrs={'class':'product-item'})
+
+titulo_produto = produto.find('h2',attrs={'class':'product-card-name'})
+
+#link_produto = produto.find('a',attrs={'class':'paguemenos-store-theme-2-x-search-custom-button'})
+
+#preco_produto = produto.find('div',attrs={'class':'paguemenos-store-theme-2-x-price'})
+
+#for produto in produtos:
+
+#link = produto.find('a',attrs={'class':'a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal'})
+
+#print('Título do produto:',titulo_produto.text)
+#print('Link do produto:', link['href'])
+#print('Preço do produto:', preco_produto.text)
+
+print(titulo_produto)
