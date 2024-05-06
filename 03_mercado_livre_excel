@@ -1,0 +1,54 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# Função para extrair dados de um produto
+def extrair_dados_produto(produto):
+    titulo_produto = produto.find('h2', attrs={'class': 'ui-search-item__title'})
+    link = produto.find('a', attrs={'class': 'ui-search-link'})
+    preco_produto = produto.find('div', attrs={'class': 'ui-search-price__second-line'})
+
+    if preco_produto:
+        real = preco_produto.find('span', class_='andes-money-amount__fraction')
+        centavos = preco_produto.find('span', class_='andes-money-amount__cents')
+        if real and centavos:
+            preco = real.text + ',' + centavos.text
+        else:
+            preco = "Preço não encontrado"
+    else:
+        preco = "Preço não encontrado"
+
+    return {
+        'Nome do Produto': titulo_produto.text if titulo_produto else 'Nome não encontrado',
+        'Link do Produto': link['href'] if link else 'Link não encontrado',
+        'Preço do Produto': preco
+    }
+
+# URL base e entrada do usuário
+url_base = 'https://lista.mercadolivre.com.br/'
+produto_nome = input('Qual produto você deseja? ')
+
+# Obtendo a página e criando a sopa
+response = requests.get(url_base + produto_nome)
+site = BeautifulSoup(response.text, 'html.parser')
+
+# Lista para armazenar os dados dos produtos
+lista_produtos = []
+
+# Obtendo os produtos e extraindo os dados
+produtos = site.find_all('div', attrs={'class': 'andes-card ui-search-result ui-search-result--core andes-card--flat andes-card--padding-16 andes-card--animated'})
+for produto in produtos:
+    dados_produto = extrair_dados_produto(produto)
+    lista_produtos.append(dados_produto)
+
+# Verificando se a lista de produtos está vazia ou não
+if lista_produtos:
+    # Criando o DataFrame
+    df = pd.DataFrame(lista_produtos)
+
+    # Salvando em um arquivo Excel
+    df.to_excel('lista_produtos.xlsx', index=False)
+
+    print("Arquivo 'lista_produtos.xlsx' gerado com sucesso!")
+else:
+    print("Nenhum produto encontrado.")
